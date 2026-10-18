@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>آکادمی هوش مصنوعی کاربردی — مشاهده اسکریپت و پرامپت</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#f6f7fb;--card:#fff;--primary:#6755f6;--accent:#53a6ff;--text:#171a2d;--muted:#667085;--border:#e6e8ee;--success:#1ea97c}
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);font-family:'Vazirmatn',system-ui,sans-serif;color:var(--text);height:100%}
+    .app{display:flex;gap:18px;padding:18px;max-width:1400px;margin:0 auto;min-height:100vh}
+    .sidebar{width:340px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .badge{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800}
+    h1{margin:0;font-size:1.05rem}
+    .small{font-size:.88rem;color:var(--muted)}
+    .progress-box{background:#fbfbff;border-radius:14px;padding:12px;border:1px solid #f0f2ff}
+    .progress{height:12px;background:#eef2ff;border-radius:999px;overflow:hidden}
+    .progress > i{height:100%;display:block;background:linear-gradient(90deg,var(--primary),var(--accent));width:0%}
+    .weeks{overflow:auto;max-height:58vh;padding-right:6px}
+    .week{border-radius:12px;padding:10px;border:1px solid transparent;background:transparent;cursor:pointer;margin-bottom:8px}
+    .week.active{background:linear-gradient(135deg,rgba(103,85,246,.06),rgba(83,166,255,.04));border-color:#e9eeff}
+    .lessons{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+    .lesson-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:10px;cursor:pointer}
+    .lesson-item.completed{background:#f0faf6;border:1px solid #d7f4ea}
+    .main{flex:1;display:flex;flex-direction:column;gap:18px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:18px}
+    .lesson-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .lesson-head h2{margin:0}
+    .status{padding:8px 12px;border-radius:999px;background:#eef6ff;color:#2741c6;font-weight:700}
+    .media-grid{display:grid;grid-template-columns:1fr;gap:14px;margin-top:12px}
+    .block{background:#fff;border:1px solid var(--border);border-radius:14px;padding:12px}
+    .lesson-text{line-height:1.9;white-space:pre-line}
+    .lesson-image{width:100%;height:auto;border-radius:12px;border:1px solid var(--border);background:#f7f7fb}
+    .video-wrap{background:#0c1220;border-radius:12px;padding:12px;color:#fff}
+    .video-stage{aspect-ratio:16/9;background:#0b1220;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #182033}
+    canvas{width:100%;height:100%;display:block}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    button{border:0;border-radius:10px;padding:10px 14px;background:linear-gradient(135deg,var(--primary),var(--accent));color:#fff;font-weight:700;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid rgba(103,85,246,.12);color:var(--primary);font-weight:700}
+    select,textarea{padding:10px;border-radius:10px;border:1px solid var(--border);background:#fff}
+    textarea{min-height:120px;width:100%;resize:vertical}
+    .quiz .option{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;background:#fbfdff;border:1px solid var(--border)}
+    .result.good{color:var(--success);font-weight:700}
+    .result.bad{color:#d44a63;font-weight:700}
+    .footer{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}
+    .script-box{white-space:pre-wrap;background:#f8fafc;border-radius:12px;padding:12px;border:1px dashed var(--border);max-height:360px;overflow:auto}
+    .prompt-box{white-space:pre-wrap;background:#fffaf8;border-radius:12px;padding:12px;border:1px dashed var(--border);max-height:360px;overflow:auto}
+    @media (max-width:980px){.app{flex-direction:column}.sidebar{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar card">
+      <div class="brand">
+        <div class="badge">آی‌ای</div>
+        <div>
+          <h1>آکادمی هوش مصنوعی کاربردی</h1>
+          <div class="small">دورهٔ ۸ هفته‌ای — مشاهده اسکریپت و پرامپت</div>
+        </div>
+      </div>
+
+      <div class="progress-box">
+        <div class="small">پیشرفت دوره</div>
+        <div class="progress" style="margin-top:8px"><i id="progressBar"></i></div>
+        <div class="small" id="progressText" style="margin-top:8px">0% تکمیل</div>
+      </div>
+
+      <div class="weeks" id="weeksList"></div>
+      <div class="small" style="margin-top:8px;color:var(--muted)">مشاهدهٔ اسکریپت ۱۵ دقیقه‌ای و پرامپت تصویری برای هر درس. برای دانلود از دکمه‌های مربوط استفاده کنید.</div>
+    </aside>
+
+    <main class="main">
+      <section class="card">
+        <div class="lesson-head">
+          <div>
+            <h2 id="lessonTitle">در حال بارگذاری...</h2>
+            <div class="small" id="lessonMeta">هفته 1 • درس 1</div>
+          </div>
+          <div id="lessonStatus" class="status">ناپایان</div>
+        </div>
+
+        <div class="media-grid">
+          <div class="block">
+            <h3>متن آموزشی</h3>
+            <div id="lessonText" class="lesson-text"></div>
+          </div>
+
+          <div class="block">
+            <h3>تصویر آموزشی (تولیدشده)</h3>
+            <img id="lessonImage" class="lesson-image" alt="تصویر درس">
+          </div>
+
+          <div class="block">
+            <h3>ویدیوی نمونه (تولید در مرورگر)</h3>
+            <div class="video-wrap">
+              <div class="video-stage">
+                <canvas id="lessonCanvas" width="1280" height="720"></canvas>
+              </div>
+              <div class="controls">
+                <select id="videoLength">
+                  <option value="20000">۲۰ ثانیه</option>
+                  <option value="45000" selected>۴۵ ثانیه</option>
+                  <option value="90000">۹۰ ثانیه</option>
+                </select>
+                <button id="makeVideoBtn">تولید ویدیو نمونه</button>
+                <button id="stopVideoBtn" class="ghost">توقف</button>
+                <a id="downloadLink" style="display:none;text-decoration:none;color:var(--primary);font-weight:700;padding:10px 12px;border-radius:10px;background:#fff;border:1px solid rgba(103,85,246,.12)" href="#">دانلود</a>
+              </div>
+              <div class="small" style="margin-top:8px;color:#ffd6a6">هشدار: ضبط طولانی در مرورگر ممکن است حجم و مصرف حافظه بالایی داشته باشد؛ برای شروع ۲۰ یا ۴۵ ثانیه را تست کنید.</div>
+            </div>
+          </div>
+
+          <div class="block">
+            <h3>اسکریپت ۱۵ دقیقه‌ای (فصل‌بندی‌شده)</h3>
+            <div class="controls" style="margin-bottom:10px">
+              <button id="showScriptBtn">نمایش اسکریپت</button>
+              <button id="downloadScriptBtn" class="ghost">دانلود اسکریپت (TXT)</button>
+            </div>
+            <div id="scriptBox" class="script-box" style="display:none"></div>
+          </div>
+
+          <div class="block">
+            <h3>پرامپت تصویری</h3>
+            <div class="controls" style="margin-bottom:10px">
+              <button id="showPromptBtn">نمایش پرامپت</button>
+              <button id="downloadPromptBtn" class="ghost">دانلود پرامپت (TXT)</button>
+            </div>
+            <div id="promptBox" class="prompt-box" style="display:none"></div>
+          </div>
+
+          <div class="block">
+            <h3>تمرین عملی</h3>
+            <div id="practiceText" class="small" style="margin-bottom:8px"></div>
+            <textarea id="practiceAnswer" placeholder="نتیجهٔ تمرین یا لینک خروجی را اینجا وارد کنید..."></textarea>
+          </div>
+
+          <div class="block">
+            <h3>آزمون چندگزینه‌ای</h3>
+            <div class="quiz">
+              <div id="quizQuestion" style="font-weight:700"></div>
+              <div id="quizOptions" style="margin-top:8px"></div>
+              <div class="controls" style="margin-top:6px">
+                <button id="checkQuizBtn">بررسی پاسخ</button>
+                <div id="quizResult" class="result"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="footer">
+          <div class="small">پس از انجام تمرین و آزمون، روی «پایان درس» بزنید تا پیشرفت ثبت شود.</div>
+          <div>
+            <button id="completeLessonBtn" class="ghost" style="background:linear-gradient(135deg,#ff7f50,#ff9e5c);color:#fff;border:0">پایان درس</button>
+          </div>
+        </div>
+
+      </section>
+    </main>
+  </div>
+
+  <script>
+    // ===== داده‌ها: هفتهٔ اول با اسکریپت و پرامپت‌های کامل (5 درس) =====
+    const weeks = (function(){
+      // کمک‌کننده برای نگهداری همهٔ هفته‌ها؛ هفتهٔ اول شامل 5 درس کامل با فیلدهای script و prompt
+      const buildWeek1 = () => {
+        return {
+          id: 'week-1',
+          title: 'هفته 1 — شروع و ابزارهای پایه',
+          lessons: [
+            {
+              id: '1-1',
+              title: 'آشنایی سریع با ابزارهای بدون کدنویسی برای تولید محتوا',
+              text: 'در این درس با ابزارهای ساخت صفحه، تصویر، ویدیوی کوتاه و پادکست بدون نیاز به برنامه‌نویسی آشنا می‌شوید. هدف عملی است: تا انتهای درس یک خروجی ساده خواهید داشت.',
+              practice: 'یک صفحهٔ ساده معرفی بسازید: عنوان، توضیح کوتاه و یک عکس یا تصویر شاخص.',
+              quiz: { question: 'کدام ابزار برای ساخت صفحهٔ بدون کدنویسی مناسب است؟', options: ['Wix یا Tilda','Node.js','Docker','C++'], answer:0 },
+              script:
+`درس 1.1 — آشنایی سریع با ابزارهای بدون کدنویسی برای تولید محتوا
+مدت تقریبی: 15:00
+
+0:00–1:30 — مقدمه و جلب توجه
+«سلام، خوش آمدید به آکادمی هوش مصنوعی کاربردی. من [نام مدرس] هستم. در این درسِ اول، در پانزده دقیقه خواهید دید چگونه بدون نوشتن حتی یک خط کد، صفحهٔ معرفی، تصویر شاخص و نمونهٔ ویدیوی کوتاه تولید کنید. هدف این درس عملی است — تا انتهای درس یک خروجی ساده خواهید داشت.»
+
+1:30–4:30 — معرفی دسته‌های ابزار (overview)
+«سه دستهٔ اصلی ابزار وجود دارد: ۱) سازنده‌های صفحهٔ drag-and-drop مانند Tilda و Wix؛ ۲) مولدهای تصویر متن→تصویر؛ ۳) ابزارهای ویدیوسازی سریع که از اسلاید یا متن ویدیو می‌سازند. هر کدام چه کاری می‌کنند و چه مزیتی دارند؟»
+(نمایش: مزایا/معایب هر دسته)
+
+4:30–8:00 — ساخت یک صفحهٔ معرفی ساده (عملی)
+قدم‌به‌قدم: هدر با تیتر، زیرتیتر و دکمهٔ CTA؛ سه کارت ویژگی؛ بخش تماس. (��مایش شبیه‌سازی ویرایشگر)
+
+8:00–11:00 — تولید تصویر شاخص و پرامپت‌نویسی ساده
+ساختار پرامپت: موضوع + سبک + رنگ + عناصر. مثال عملی و نمایش چند خروجی.
+
+11:00–13:30 — ساخت نمونهٔ ویدیوی کوتاه
+ساختار ویدیو: Hook (5–8s)، محتوا (30–40s)، CTA (5–7s). نمایش تایم‌لاین و اضافه کردن موسیقی.
+
+13:30–15:00 — جمع‌بندی و تمرین
+خلاصه و CTA: تمرین — عنوان صفحه و یک پرامپت تصویر بنویسید و ذخیره نمایید.
+`,
+              prompt_fa:
+`تصویر شاخص مینیمال و حرفه‌ای برای دورهٔ آموزشی یادگیری هوش مصنوعی کاربردی، موضوع: تولید محتوا بدون کدنویسی، سبک: مینیمال-مدرن، رنگ‌پالت: آبی ملایم و سفید، المنت‌ها: آیکون لپ‌تاپ، آیکون ویدیو، آیکون میکروفن، نور ملایم، پس‌زمینه ساده، قاب 16:9، وضوح بالا`,
+              prompt_en:
+`Minimal professional course cover for 'Practical AI for Content Creation' — subject: content creation without coding; style: minimal modern; color palette: soft blue and white; elements: laptop icon, video icon, microphone icon; soft lighting; clean background; 16:9 composition; high resolution`,
+              prompt_settings:
+`Aspect: 16:9 (1200x675 or 1920x1080)
+Model: SDXL / Midjourney v6
+Guidance (CFG): 7–9
+Negative prompts: watermark, text, lowres, deformed, extra limbs`
+            },
+            {
+              id: '1-2',
+              title: 'تولید تصویر با توصیف فارسی (پرامپت‌نویسی ساده)',
+              text: 'در این درس یاد می‌گیرید چطور با نوشتن پرامپت فارسی دقیق تصاویر کاربردی تولید کنید. ساختار: موضوع + سبک + رنگ + جزئیات.',
+              practice: 'یک پرامپت فارسی 15–25 کلمه‌ای برای تصویر آموزشی بنویسید.',
+              quiz: { question: 'کدام گزینه نشان‌دهندهٔ پرامپت خوب است؟', options:['سبک بصری: مینیمال و روشن، آبی و سفید','حجم RAM','نسخهٔ Node','کد HTML'], answer:0 },
+              script:
+`درس 1.2 — تولید تصویر با توصیف فارسی (پرامپت‌نویسی ساده)
+مدت تقریبی: 15:00
+
+0:00–1:00 — مقدمه
+«در این درس روی نوشتن پرامپت‌های مؤثر به زبان فارسی متمرکز می‌شویم تا تصویرهای کاربردی و مرتب تولید کنیم.»
+
+1:00–4:00 — عناصر یک پرامپت خوب
+یک پرامپت خوب شامل: موضوع، سبک بصری، زاویه/کادر، ترکیب رنگ، جزئیات و حس کلی می‌شود.
+
+4:00–8:00 — تمرین عملی: نوشتن پرامپت فارسی
+نوشتن سه پرامپت (کوتاه، متوسط، بلند) و بررسی خروجی‌ها.
+
+8:00–11:30 — ویرایش و بهینه‌سازی پرامپت
+بهبود با افزودن جزئیات و استفاده از negative prompts.
+
+11:30–14:00 — پرامپت برای استایل‌های مختلف
+تنظیم پرامپت برای فتو-ریالیست، مینیمال و کارتونی.
+
+14:00–15:00 — جمع‌بندی و تمرین
+تمرین: یک پرامپت 15–25 کلمه‌ای بنویسید و ذخیره کنید.
+`,
+              prompt_fa:
+`تصویر مینیمال و روشن برای کپشن آموزشی، موضوع: یادگیری هوش مصنوعی برای تولید محتوا، سبک: مینیمال، رنگ‌ها: آبی و سفید، عنصر اصلی: کاربر در حال کار با لپ‌تاپ و آیکون‌های محتوا، نور نرم، قاب 16:9 یا مربعی`,
+              prompt_en:
+`Minimal bright illustration for educational caption — subject: learning AI for content creation; style: minimal; colors: blue and white; main element: user working on laptop with content icons; soft lighting; 16:9 or square`,
+              prompt_settings:
+`Aspect: 1:1 or 16:9
+Model: SDXL
+CFG: 6–8
+Negative: text, watermark, hands malformed`
+            },
+            {
+              id: '1-3',
+              title: 'ساخت ویدیوی آموزشی ۱۵ دقیقه‌ای از متن',
+              text: 'در این درس فرایند تبدیل متن آموزشی به ویدیوی ساختاریافتهٔ ۱۵ دقیقه‌ای را یاد می‌گیرید؛ تقسیم‌بندی فصل‌ها، اسکریپت‌نویسی و انتخاب دارایی‌ها.',
+              practice: 'یک اسکریپت 15 دقیقه‌ای با مقدمه، 3 بخش و جمع‌بندی بنویسید.',
+              quiz: { question: 'مهم‌ترین قدم برای ساخت یک ویدیوی ۱۵ دقیقه‌ای چیست؟', options:['داشتن اسکریپت و ساختار','شروع بدون برنامه','انتخاب رنگ','افزودن افکت‌ زیاد'], answer:0 },
+              script:
+`درس 1.3 — ساخت ویدیوی آموزشی ۱۵ دقیقه‌ای از متن
+مدت تقریبی: 15:00
+
+0:00–1:00 — مقدمه و هدف
+«در این درس فرایند تبدیل یک متن آموزشی به یک ویدیوی 15 دقیقه‌ای ساختاریافته را یاد می‌گیریم.»
+
+1:00–4:00 — طراحی اسکلت ویدیوی 15 دقیقه‌ای
+الگوی پیشنهادی: مقدمه (1–2 دقیقه)، بخش اول (4 دقیقه)، بخش دوم (4 دقیقه)، بخش سوم (3 دقیقه)، جمع‌بندی و CTA (1 دقیقه).
+
+4:00–9:00 — نوشتن اسکریپت فصل به فصل
+برای هر فصل تیتر، 3 نکتهٔ کلیدی و یک مثال عملی بنویسید.
+
+9:00–12:00 — انتخاب محتوای تصویری و دارایی‌ها
+فهرست تصاویر/کلیپ‌های موردنیاز؛ نحوهٔ تولید با مولد تصویر.
+
+12:00–14:30 — ترکیب نریشن، موسیقی و زیرنویس
+نکاتی برای همگام‌سازی صدا با اسلاید و انتخاب موسیقی مناسب.
+
+14:30–15:00 — جمع‌بندی و تمرین
+تمرین: یک اسکلت 15 دقیقه‌ای با فصل‌بندی آماده کنید.
+`,
+              prompt_fa:
+`کاور سینمایی-آموزشی برای ویدیو: موضوع آموزش ساخت ویدیو با AI، سبک: مدرن و تم آموزشی، رنگ‌ها: آبی تیره و سفید، المنت‌ها: مانیتور با اسلاید، آیکون پخش، متن خوانا، نور جهت‌دار ملایم، قاب 16:9`,
+              prompt_en:
+`Cinematic-educational cover for video: topic AI video production; style: modern educational; colors: dark blue and white; elements: monitor with slides, play icon, clear text; soft directional lighting; 16:9`,
+              prompt_settings:
+`Aspect: 16:9 (1920x1080)
+Model: SDXL / Midjourney
+CFG: 7–9
+Negative: blurry, watermark, lowres`
+            },
+            {
+              id: '1-4',
+              title: 'تولید پادکست کوتاه: متن→صدا→پردازش',
+              text: 'در این درس تبدیل متن به گفتار و ویرایش صوت برای پادکست کوتاه را یاد می‌گیرید؛ نکات لحن، ریتم و ابزارهای سادهٔ ویرایش صوت.',
+              practice: 'یک متن 1–3 دقیقه‌ای بنویسید و آن را ضبط یا با TTS تولید کنید.',
+              quiz: { question: 'برای ضبط پادکست خوب چه نکته‌ای مهم است؟', options:['لحن آرام و واضح','خیلی سریع خواندن','بدون مکث','فقط متن کوتاه'], answer:0 },
+              script:
+`درس 1.4 — تولید پادکست کوتاه: متن→صدا→پردازش
+مدت تقریبی: 15:00
+
+0:00–1:00 — مقدمه و اهمیت پادکست
+«پادکست راهی ساده برای انتقال دانش است. در این درس یاد می‌گیریم چگونه متن را به نریشن تبدیل و کیفیت اولیه صوت را اصلاح کنیم.»
+
+1:00–4:00 — نوشتن متن مناسب پادکست
+متن مکالمه‌ای با جملات کوتاه بهتر کار می‌کند؛ ذکر مکث‌ها و تاکیدها مفید است.
+
+4:00–8:00 — استفاده از TTS مرورگر و نکات
+شرح Web Speech API و تنظیمات rate/pitch برای صدای طبیعی‌تر.
+
+8:00–12:00 — ویرایش صوتی پایه
+کاهش نویز، برش سکوت‌ها، افزودن موسیقی پس‌زمینه و فیدهای ورودی/خروجی.
+
+12:00–14:00 — استخراج پادکست از ویدیو
+روش‌های استخراج صوت و آماده‌سازی برای انتشار (MP3 128–192kbps).
+
+14:00–15:00 — جمع‌بندی و تمرین
+تمرین: متن 1–3 دقیقه‌ای را ضبط یا تولید کنید.
+`,
+              prompt_fa:
+`کاور پادکست مدرن و مینیمال برای موضوع هوش مصنوعی و تولید محتوا، قالب مربع 1:1، رنگ‌ها: آبی تیره و نارنجی ملایم، المنت‌ها: میکروفن استودیویی، نُت صوتی، فونت خوانا`,
+              prompt_en:
+`Modern minimal podcast cover for AI & content creation; square 1:1; colors: dark blue and soft orange; elements: studio microphone, sound wave icon; legible typography`,
+              prompt_settings:
+`Aspect: 1:1 (1400x1400)
+Model: SDXL
+CFG: 6–8
+Negative: blurry, lowres, watermark`
+            },
+            {
+              id: '1-5',
+              title: 'برنامه‌ریزی محتوای شبکه‌های اجتماعی با هوش مصنوعی',
+              text: 'در این درس تقویم محتوا و تولید کپشن با مدل‌های زبانی را می‌آموزید؛ هدف برنامه‌ریزی هفتگی و تولید ایده‌های ریلز/پست/استوری است.',
+              practice: 'برای یک هفته 3 پست کوتاه با عنوان و کپشن و 2 هشتگ بنویسید.',
+              quiz: { question: 'برای افزایش تعامل در شبکه‌های اجتماعی چه کاری مناسب است؟', options:['تنوع در فرمت و زمان‌بندی','یک نوع پست تکراری','عدم پاسخ به کامنت‌ها','استفاده از تنها یک هشتگ'], answer:0 },
+              script:
+`درس 1.5 — برنامه‌ریزی محتوای شبکه‌های اجتماعی با هوش مصنوعی
+مدت تقریبی: 15:00
+
+0:00–1:00 — مقدمه و هدف
+«در این درس می‌خواهیم تقویم محتوایی هفتگی/ماهیانه طراحی کنیم و با کمک مدل‌های زبانی کپشن‌ها و ایده‌های پست تولید کنیم.»
+
+1:00–4:00 — تعیین اهداف و پرسونای مخاطب
+تعریف مخاطب هدف، KPIs و پیام اصلی هر پست.
+
+4:00–8:00 — قالب‌های محتوا و چرخش فرمت‌ها
+پست متنی، تصویر شاخص، ریلز، استوری — کاربرد هر کدام و نمونه‌ها.
+
+8:00–12:00 — استفاده از مدل‌های زبانی برای تولید کپشن
+پرامپت نمونه برای تولید کپشن و هشتگ و بررسی دو نسخهٔ متفاوت برای A/B تست.
+
+12:00–14:30 — تولید تقویم محتوا 7 روزه (مثال عملی)
+الگوریتم موضوع→تقسیم‌بندی و نمونه خروجی برای 7 روز.
+
+14:30–15:00 — جمع‌بندی و تمرین
+تمرین: برای یک هفته 3 پست کوتاه تولید کنید.
+`,
+              prompt_fa:
+`طراحی پست شبکه‌های اجتماعی آموزشی، سبک مینیمال و خوانا، رنگ‌های آبی و سفید، المنت‌ها: عنوان بزرگ، آیکون‌های آموزشی، فضای منفی کافی، قاب مربعی یا 4:5`,
+              prompt_en:
+`Social media educational post design; minimal legible style; colors: blue and white; elements: large headline, educational icons; plenty of negative space; square or 4:5 aspect`,
+              prompt_settings:
+`Aspect: 4:5 (1080x1350) or 1:1
+Model: SDXL
+CFG: 6–8
+Negative: text, watermark, busy background`
+            }
+          ]
+        };
+      };
+
+      // ساخت آرایهٔ 8 هفته — هفتهٔ اول با محتوا، بقیهٔ هفته‌ها به‌صورت placeholder
+      const weeks = [ buildWeek1() ];
+      for (let i = 2; i <= 8; i++) {
+        const lessons = [];
+        for (let j = 1; j <= 5; j++) {
+          lessons.push({
+            id: `${i}-${j}`,
+            title: `درس ${j} — هفته ${i} (پیش‌نمایش)`,
+            text: `متن آموزشی پایه برای درس ${j} از هفته ${i}. (محتوا در صورت درخواست کامل می‌شود.)`,
+            practice: `تمرین درس ${j}`,
+            quiz: { question: 'سؤال نمونه', options: ['گزینه 1','گزینه 2','گزینه 3','گزینه 4'], answer:0 },
+            script: `اسکریپت نمونه برای درس ${j} هفته ${i} — در صورت درخواست تکمیل می‌شود.`,
+            prompt_fa: `پرامپت فارسی نمونه برای درس ${j} هفته ${i}.`,
+            prompt_en: `Example English prompt for lesson ${j} week ${i}.`,
+            prompt_settings: `Aspect: 16:9\nModel: SDXL\nCFG: 7`
+          });
+        }
+        weeks.push({ id: `week-${i}`, title: `هفته ${i} — (پوشش)`, lessons });
+      }
+      return weeks;
+    })();
+
+    // ===== حالت و المان‌ها =====
+    const totalLessons = weeks.reduce((s,w) => s + w.lessons.length, 0);
+    const state = {
+      weekIndex: 0,
+      lessonIndex: 0,
+      completed: new Set(JSON.parse(localStorage.getItem('academy-scripts-progress') || '[]'))
+    };
+
+    const el = {
+      weeksList: document.getElementById('weeksList'),
+      lessonTitle: document.getElementById('lessonTitle'),
+      lessonMeta: document.getElementById('lessonMeta'),
+      lessonText: document.getElementById('lessonText'),
+      lessonImage: document.getElementById('lessonImage'),
+      practiceText: document.getElementById('practiceText'),
+      progressBar: document.getElementById('progressBar'),
+      progressText: document.getElementById('progressText'),
+      lessonStatus: document.getElementById('lessonStatus'),
+      quizQuestion: document.getElementById('quizQuestion'),
+      quizOptions: document.getElementById('quizOptions'),
+      quizResult: document.getElementById('quizResult'),
+      canvas: document.getElementById('lessonCanvas'),
+      makeVideoBtn: document.getElementById('makeVideoBtn'),
+      stopVideoBtn: document.getElementById('stopVideoBtn'),
+      downloadLink: document.getElementById('downloadLink'),
+      videoLength: document.getElementById('videoLength'),
+      playAudioBtn: document.getElementById('playAudioBtn'),
+      stopAudioBtn: document.getElementById('stopAudioBtn'),
+      showScriptBtn: document.getElementById('showScriptBtn'),
+      downloadScriptBtn: document.getElementById('downloadScriptBtn'),
+      scriptBox: document.getElementById('scriptBox'),
+      showPromptBtn: document.getElementById('showPromptBtn'),
+      downloadPromptBtn: document.getElementById('downloadPromptBtn'),
+      promptBox: document.getElementById('promptBox'),
+      generateLongScriptBtn: document.getElementById('generateLongScriptBtn'),
+      longScriptDiv: document.getElementById('longScript'),
+      practiceAnswer: document.getElementById('practiceAnswer'),
+      checkQuizBtn: document.getElementById('checkQuizBtn'),
+      completeLessonBtn: document.getElementById('completeLessonBtn')
+    };
+
+    // ===== رندر لیست هفته‌ها و درس‌ها =====
+    function renderWeeks() {
+      el.weeksList.innerHTML = '';
+      weeks.forEach((wk, wi) => {
+        const wdiv = document.createElement('div');
+        wdiv.className = 'week' + (wi === state.weekIndex ? ' active' : '');
+        wdiv.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><strong>${wk.title}</strong><span class="small">${wk.lessons.length} درس</span></div>`;
+        const lessonsWrap = document.createElement('div');
+        lessonsWrap.className = 'lessons';
+        wk.lessons.forEach((ls, li) => {
+          const item = document.createElement('div');
+          item.className = 'lesson-item' + (state.completed.has(ls.id) ? ' completed' : '');
+          item.innerHTML = `<div>${li+1}. ${ls.title}</div><div class="small">${state.completed.has(ls.id) ? 'تکمیل' : 'در حال انجام'}</div>`;
+          item.addEventListener('click', (ev) => { ev.stopPropagation(); state.weekIndex = wi; state.lessonIndex = li; renderLesson(); });
+          lessonsWrap.appendChild(item);
+        });
+        wdiv.appendChild(lessonsWrap);
+        wdiv.addEventListener('click', () => { state.weekIndex = wi; state.lessonIndex = 0; renderLesson(); });
+        el.weeksList.appendChild(wdiv);
+      });
+    }
+
+    // ===== نمایش درس فعلی =====
+    function renderLesson() {
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      el.lessonTitle.textContent = lesson.title;
+      el.lessonMeta.textContent = `${weeks[state.weekIndex].title} • درس ${state.lessonIndex + 1}`;
+      el.lessonText.textContent = lesson.text;
+      el.practiceText.textContent = lesson.practice || '';
+      el.lessonImage.src = generateSVG(lesson.title, lesson.text);
+      el.lessonStatus.textContent = state.completed.has(lesson.id) ? 'تکمیل‌شده' : 'ناپایان';
+      el.lessonStatus.classList.toggle('done', state.completed.has(lesson.id));
+
+      // quiz
+      el.quizQuestion.textContent = lesson.quiz.question;
+      el.quizOptions.innerHTML = '';
+      lesson.quiz.options.forEach((opt,i)=>{
+        const row = document.createElement('label');
+        row.className = 'option';
+        row.innerHTML = `<input type="radio" name="quiz-${lesson.id}" value="${i}"><span>${opt}</span>`;
+        el.quizOptions.appendChild(row);
+      });
+      el.quizResult.textContent = '';
+
+      // script & prompt UI
+      el.scriptBox.style.display = 'none';
+      el.scriptBox.textContent = lesson.script || 'اسکریپت موجود نیست.';
+      el.promptBox.style.display = 'none';
+      el.promptBox.textContent = buildPromptDisplay(lesson);
+
+      // clear practice answer
+      el.practiceAnswer.value = '';
+
+      // start canvas animation
+      startCanvasAnimation(lesson.title, lesson.text);
+      updateProgress();
+      renderWeeks();
+    }
+
+    function buildPromptDisplay(lesson){
+      return `پرامپت فارسی:\n\n${lesson.prompt_fa || ''}\n\n---\nPrompt (English):\n\n${lesson.prompt_en || ''}\n\n---\nتنظیمات پیشنهادی:\n\n${lesson.prompt_settings || ''}`;
+    }
+
+    // ===== SVG generator برای تصویر شاخص =====
+    function generateSVG(title, subtitle) {
+      const bgSet = ["#e8f4ff","#f3eaff","#e9fff5","#fff6e6"];
+      const acc = ["#6755f6","#5db6ff","#38b88d","#ff9d5c"];
+      const bg = bgSet[Math.floor(Math.random()*bgSet.length)];
+      const ac = acc[Math.floor(Math.random()*acc.length)];
+      const safeTitle = escapeXml(title);
+      const safeSub = escapeXml(subtitle.slice(0,140));
+      const svg = `
+        <svg xmlns='http://www.w3.org/2000/svg' width='1200' height='720' viewBox='0 0 1200 720'>
+          <rect width='100%' height='100%' fill='${bg}' rx='24'/>
+          <g transform='translate(60,60)'>
+            <rect x='0' y='0' width='560' height='220' rx='18' fill='#fff' opacity='0.9'/>
+            <text x='20' y='64' font-family='Vazirmatn, sans-serif' font-size='36' font-weight='700' fill='#102034'>${safeTitle}</text>
+            <text x='20' y='110' font-family='Vazirmatn, sans-serif' font-size='20' fill='#334155' opacity='0.9'>${safeSub}...</text>
+          </g>
+          <circle cx='980' cy='140' r='140' fill='${ac}' opacity='0.12'/>
+          <rect x='60' y='360' width='1080' height='260' rx='18' fill='#fff' opacity='0.88'/>
+          <text x='110' y='440' font-family='Vazirmatn, sans-serif' font-size='22' fill='#25304b'>آکادمی هوش مصنوعی کاربردی</text>
+          <text x='110' y='480' font-family='Vazirmatn, sans-serif' font-size='16' fill='#475569'>تولیدشده در مرورگر — تصویر آموزشی</text>
+        </svg>
+      `;
+      return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    }
+    function escapeXml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+    // ===== Canvas animation (پیش‌نمایش ویدیوی درون‌مروری) =====
+    let animId = null;
+    function startCanvasAnimation(title, subtitle) {
+      const canvas = el.canvas;
+      const ctx = canvas.getContext('2d');
+      let t = 0;
+      const w = canvas.width, h = canvas.height;
+      function draw(){
+        ctx.clearRect(0,0,w,h);
+        const g = ctx.createLinearGradient(0,0,w,h); g.addColorStop(0,'#071027'); g.addColorStop(1,'#0f1b31');
+        ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+        for(let i=0;i<7;i++){
+          const x = (i+1)*140 + Math.sin((t+i)/30)*100;
+          const y = 120 + (i%3)*160 + Math.cos((t+i)/40)*50;
+          ctx.beginPath();
+          ctx.fillStyle = `hsla(${(i*48 + t*0.4)%360}, 70%, 60%, 0.14)`;
+          ctx.ellipse(x,y,90 + i*6,70 + i*4, 0, 0, Math.PI*2);
+          ctx.fill();
+        }
+        ctx.fillStyle = "rgba(255,255,255,0.04)";
+        ctx.fillRect(70,70,w-140,h-180);
+        ctx.fillStyle = "#fff";
+        ctx.font = "700 48px Vazirmatn, sans-serif";
+        ctx.textAlign = "right";
+        const titleToDraw = title.length > 40 ? title.slice(0,40) + "..." : title;
+        ctx.fillText(titleToDraw, w - 120, 160);
+        ctx.font = "500 24px Vazirmatn, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,0.9)";
+        const lines = wrapText(ctx, subtitle, w - 260);
+        lines.slice(0,4).forEach((ln, idx) => ctx.fillText(ln, w - 120, 220 + idx*36));
+        ctx.fillStyle = "rgba(255,255,255,0.03)"; ctx.fillRect(70, h - 120, w - 140, 56);
+        ctx.fillStyle = "#cfe6ff"; ctx.font = "600 20px Vazirmatn, sans-serif"; ctx.textAlign = "left";
+        ctx.fillText("آکادمی هوش مصنوعی کاربردی — تولیدشده در مرورگر", 90, h - 84);
+        t += 1.4; animId = requestAnimationFrame(draw);
+      }
+      if(animId) cancelAnimationFrame(animId);
+      animId = requestAnimationFrame(draw);
+    }
+    function wrapText(ctx, text, maxWidth) {
+      const words = text.split(" ");
+      const lines = []; let cur = "";
+      for (const w of words) {
+        const test = cur ? cur + " " + w : w;
+        if (ctx.measureText(test).width > maxWidth && cur) { lines.push(cur); cur = w; } else cur = test;
+      }
+      if (cur) lines.push(cur);
+      return lines;
+    }
+
+    // ===== ضبط ویدیو نمونه (درون‌مروری) =====
+    let recorder = null, chunks = [], recTimer = null;
+    function makeVideoSample() {
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      const duration = Number(document.getElementById('videoLength').value || 45000);
+      const stream = el.canvas.captureStream ? el.canvas.captureStream(25) : null;
+      if (!stream) { alert('مرورگر شما از captureStream پشتیبانی نمی‌کند.'); return; }
+      try { recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' }); }
+      catch(e) { try { recorder = new MediaRecorder(stream); } catch(e2){ alert('مرورگر شما ضبط را پشتیبانی نمی‌کند.'); return; } }
+      chunks = []; recorder.ondataavailable = ev => { if(ev.data && ev.data.size) chunks.push(ev.data); };
+      recorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        el.downloadLink.href = url; el.downloadLink.download = `lesson-${lesson.id}.webm`;
+        el.downloadLink.style.display = 'inline-block'; el.downloadLink.textContent = 'دانلود ویدیو';
+        chunks = []; recorder = null;
+      };
+      recorder.start(1000);
+      document.getElementById('makeVideoBtn').disabled = true; el.stopVideoBtn.style.display = 'inline-block';
+      let phase = 0;
+      const drawLoop = () => {
+        if (!recorder || recorder.state === 'inactive') return;
+        const base = lesson.text;
+        const variants = [ base.substring(0,120), base.substring(0,240), base.substring(0,380), base.substring(0,520) ];
+        const textToShow = variants[phase % variants.length];
+        startCanvasAnimation(lesson.title, textToShow);
+        phase++;
+        requestAnimationFrame(drawLoop);
+      };
+      requestAnimationFrame(drawLoop);
+      recTimer = setTimeout(() => { if(recorder && recorder.state !== 'inactive') recorder.stop(); document.getElementById('makeVideoBtn').disabled = false; el.stopVideoBtn.style.display = 'none'; }, duration);
+      el.stopVideoBtn.onclick = () => { clearTimeout(recTimer); if(recorder && recorder.state !== 'inactive') recorder.stop(); document.getElementById('makeVideoBtn').disabled = false; el.stopVideoBtn.style.display = 'none'; };
+    }
+
+    // ===== پخش TTS (نمونه) =====
+    function speakLesson() {
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      if (!('speechSynthesis' in window)) { alert('مرورگر شما از Web Speech API پشتیبانی نمی‌کند.'); return; }
+      speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(lesson.text);
+      u.lang = 'fa-IR'; u.rate = 0.95; u.pitch = 1;
+      const voices = speechSynthesis.getVoices(); const fa = voices.find(v => /fa/i.test(v.lang)) || voices[0]; if(fa) u.voice = fa;
+      speechSynthesis.speak(u);
+    }
+    function stopSpeech() { if('speechSynthesis' in window) speechSynthesis.cancel(); }
+
+    // ===== نمایش/دانلود اسکریپت و پرامپت =====
+    el.showScriptBtn.addEventListener('click', ()=>{
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      if (el.scriptBox.style.display === 'none') { el.scriptBox.style.display = 'block'; el.showScriptBtn.textContent = 'پنهان کردن اسکریپت'; }
+      else { el.scriptBox.style.display = 'none'; el.showScriptBtn.textContent = 'نمایش اسکریپت'; }
+    });
+    el.downloadScriptBtn.addEventListener('click', ()=>{
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      const filename = `script-${lesson.id}.txt`;
+      const content = lesson.script || 'اسکریپت موجود نیست.';
+      downloadTextFile(content, filename);
+    });
+    el.showPromptBtn.addEventListener('click', ()=>{
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      if (el.promptBox.style.display === 'none') { el.promptBox.style.display = 'block'; el.showPromptBtn.textContent = 'پنهان کردن پرامپت'; }
+      else { el.promptBox.style.display = 'none'; el.showPromptBtn.textContent = 'نمایش پرامپت'; }
+    });
+    el.downloadPromptBtn.addEventListener('click', ()=>{
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      const filename = `prompt-${lesson.id}.txt`;
+      const content = buildPromptDisplay(lesson);
+      downloadTextFile(content, filename);
+    });
+    function downloadTextFile(text, filename){
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a);
+      a.click(); setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 3000);
+    }
+
+    // ===== تولید SRT ساده (اختیاری) =====
+    // (امکان توسعه: تبدیل script به SRT با تقسیم به بخش‌های زمانی؛ در این نسخه فقط دانلود اسکریپت TXT قرار داده شده)
+
+    // ===== آزمون و تکمیل درس =====
+    document.getElementById('checkQuizBtn').addEventListener('click', ()=>{
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      const checked = document.querySelector(`input[name="quiz-${lesson.id}"]:checked`);
+      const resultEl = document.getElementById('quizResult');
+      if (!checked) { resultEl.textContent = 'لطفاً یک گزینه را انتخاب کنید.'; resultEl.className = 'result bad'; return; }
+      const selected = Number(checked.value);
+      const ok = selected === lesson.quiz.answer;
+      resultEl.textContent = ok ? 'درست است — آفرین!' : 'نادرست — دوباره تلاش کنید.';
+      resultEl.className = ok ? 'result good' : 'result bad';
+    });
+
+    el.completeLessonBtn.addEventListener('click', ()=>{
+      const lesson = weeks[state.weekIndex].lessons[state.lessonIndex];
+      state.completed.add(lesson.id);
+      localStorage.setItem('academy-scripts-progress', JSON.stringify([...state.completed]));
+      el.lessonStatus.textContent = 'تکمیل‌شده'; el.lessonStatus.classList.add('done');
+      updateProgress();
+      renderWeeks();
+    });
+
+    // ===== سایر بایندینگ‌ها =====
+    document.getElementById('makeVideoBtn').addEventListener('click', makeVideoSample);
+    document.getElementById('stopVideoBtn').addEventListener('click', ()=>{ if(recorder && recorder.state !== 'inactive') recorder.stop(); document.getElementById('makeVideoBtn').disabled = false; document.getElementById('stopVideoBtn').style.display = 'none'; });
+    document.getElementById('playAudioBtn').addEventListener('click', speakLesson);
+    document.getElementById('stopAudioBtn').addEventListener('click', stopSpeech);
+
+    // ===== Progress bar =====
+    function updateProgress(){
+      const pct = Math.round((state.completed.size / totalLessons) * 100);
+      el.progressBar.style.width = pct + '%';
+      el.progressText.textContent = pct + '% تکمیل';
+    }
+
+    // ===== Init =====
+    renderWeeks();
+    renderLesson();
+    updateProgress();
+
+    if ('speechSynthesis' in window) window.speechSynthesis.onvoiceschanged = ()=>{};
+    console.log('اسکریپت‌ها و پرامپت‌های هفتهٔ اول داخل اپ بارگذاری شدند. برای ادامهٔ هفته‌ها یا تغییر لحن/طول اسکریپت‌ها بگویید تا آپدیت کنم.');
+  </script>
+</body>
+</html>
